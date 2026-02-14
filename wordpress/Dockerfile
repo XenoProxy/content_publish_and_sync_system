@@ -17,8 +17,8 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
 EXPOSE 9000
 
 # Healthcheck для Compose, ждём пока index.php доступен
-HEALTHCHECK --interval=5s --timeout=3s --retries=5 \
-  CMD curl -f http://localhost/web/index.php || exit 1
+# HEALTHCHECK --interval=5s --timeout=3s --retries=5 \
+#   CMD curl -f http://localhost/web/index.php || exit 1
 
 # Запуск PHP-FPM
 CMD ["php-fpm"]

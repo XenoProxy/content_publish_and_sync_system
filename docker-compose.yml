@@ -40,8 +40,8 @@ services:
     networks:
       - content_network
     depends_on:
-      wordpress:
-        condition: service_healthy
+      - wordpress
+        # condition: service_healthy
 
   nginx:
     image: nginx:latest
