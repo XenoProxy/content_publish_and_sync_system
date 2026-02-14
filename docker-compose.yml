@@ -1,0 +1,65 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: content_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: wp_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - content_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  wordpress:
+    build:
+      context: ./wordpress
+      dockerfile: Dockerfile
+    container_name: content_wordpress
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - content_network
+    volumes:
+      - ./wordpress:/var/www
+
+  nextjs:
+    build:
+      context: ./nextjs
+      dockerfile: Dockerfile
+    container_name: content_nextjs
+    restart: unless-stopped
+    networks:
+      - content_network
+    depends_on:
+      wordpress:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:latest
+    container_name: content_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - nextjs
+      - wordpress
+    networks:
+      - content_network
+
+volumes:
+  mysql_data:
+
+networks:
+  content_network:
