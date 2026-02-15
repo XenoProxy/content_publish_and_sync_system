@@ -2,15 +2,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Копируем зависимости
 COPY package*.json ./
 RUN npm install
 
-# Копируем проект
 COPY . .
-
-# Сборка Next.js
 RUN npm run build
 
 EXPOSE 3000
-CMD ["npm", "start"]
+
+CMD ["npm", "start", "--", "-H", "0.0.0.0"]
