@@ -13,12 +13,21 @@ if (!defined('ABSPATH')) {
 define('CSM_TABLE', 'content_sync_posts');
 
 require_once plugin_dir_path(__FILE__) . 'includes/class-csm-database.php';
-// require_once plugin_dir_path(__FILE__) . 'includes/class-csm-sync.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-csm-sync.php';
 // require_once plugin_dir_path(__FILE__) . 'includes/class-csm-rest.php';
 
 register_activation_hook(__FILE__, ['CSM_Database', 'create_table']);
 
-// add_action('init', function () {
-//     new CSM_Sync();
-//     new CSM_REST();
-// });
+add_action('init', function () {
+    new CSM_Sync();
+    // new CSM_REST();
+});
+
+add_action('admin_init', function () {
+    if (isset($_GET['csm_sync'])) {
+        $sync = new CSM_Sync();
+        $sync->sync(true);
+        echo 'Sync completed';
+        exit;
+    }
+});
