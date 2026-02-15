@@ -14,6 +14,7 @@ define('CSM_TABLE', 'content_sync_posts');
 
 require_once plugin_dir_path(__FILE__) . 'includes/class-csm-database.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-csm-sync.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-csm-cli.php';
 // require_once plugin_dir_path(__FILE__) . 'includes/class-csm-rest.php';
 
 register_activation_hook(__FILE__, function () {
