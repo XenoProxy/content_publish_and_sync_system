@@ -16,7 +16,20 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-csm-database.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-csm-sync.php';
 // require_once plugin_dir_path(__FILE__) . 'includes/class-csm-rest.php';
 
-register_activation_hook(__FILE__, ['CSM_Database', 'create_table']);
+register_activation_hook(__FILE__, function () {
+    CSM_Database::create_table();
+
+    if (!wp_next_scheduled('csm_cron_sync')) {
+        wp_schedule_event(time(), 'every_15_minutes', 'csm_cron_sync');
+    }
+});
+
+register_deactivation_hook(__FILE__, function () {
+    $timestamp = wp_next_scheduled('csm_cron_sync');
+    if ($timestamp) {
+        wp_unschedule_event($timestamp, 'csm_cron_sync');
+    }
+});
 
 add_action('init', function () {
     new CSM_Sync();
@@ -30,4 +43,17 @@ add_action('admin_init', function () {
         echo 'Sync completed';
         exit;
     }
+});
+
+add_filter('cron_schedules', function ($schedules) {
+    $schedules['every_15_minutes'] = [
+        'interval' => 900,
+        'display'  => 'Every 15 Minutes'
+    ];
+    return $schedules;
+});
+
+add_action('csm_cron_sync', function () {
+    $sync = new CSM_Sync();
+    $sync->sync();
 });
