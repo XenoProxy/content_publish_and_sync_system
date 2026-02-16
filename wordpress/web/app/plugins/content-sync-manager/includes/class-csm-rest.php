@@ -24,6 +24,12 @@ class CSM_REST
             'permission_callback' => function () {
                 return current_user_can('edit_posts');
             },
+            'args' => [
+                'id' => [
+                    'required' => true,
+                    'sanitize_callback' => 'absint',
+                ]
+            ]
         ]);
     }
 
@@ -179,11 +185,17 @@ class CSM_REST
             return new WP_Error('db_error', 'Database update failed', ['status' => 500]);
         }
 
+        global $wpdb;
+        $keys = $wpdb->get_col("SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '_transient_csm_posts_%'");
+        foreach ($keys as $key) {
+            $transient = str_replace('_transient_', '', $key);
+            delete_transient($transient);
+        }
+
         return [
             'success' => true,
             'id' => $id,
             'status' => 'published'
         ];
     }
-
 }

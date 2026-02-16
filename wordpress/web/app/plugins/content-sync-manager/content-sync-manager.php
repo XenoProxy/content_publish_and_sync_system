@@ -48,3 +48,33 @@ add_action('csm_cron_sync', function () {
 });
 
 new CSM_REST();
+
+add_action('init', function () {
+
+    if (!function_exists('register_block_type')) {
+        return;
+    }
+
+    $plugin_url  = plugin_dir_url(__FILE__);
+    $plugin_path = plugin_dir_path(__FILE__);
+
+    wp_register_script(
+        'csm-block-js',
+        $plugin_url . 'block/index.js',
+        ['wp-blocks', 'wp-element', 'wp-components'],
+        filemtime($plugin_path . 'block/index.js')
+    );    
+
+    wp_register_style(
+        'csm-block-css',
+        $plugin_url . 'block/style.css',
+        [],
+        filemtime($plugin_path . 'block/style.css')
+    );
+
+    register_block_type('csm/content-sync-preview', [
+        'editor_script' => 'csm-block-js',
+        'editor_style'  => 'csm-block-css',
+    ]);
+});
+
