@@ -14,10 +14,12 @@ define('CSM_TABLE', 'content_sync_posts');
 
 require_once plugin_dir_path(__FILE__) . 'includes/class-csm-database.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-csm-sync.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-csm-rest.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-csm-cli.php';
-// require_once plugin_dir_path(__FILE__) . 'includes/class-csm-rest.php';
+
 
 register_activation_hook(__FILE__, function () {
+
     CSM_Database::create_table();
 
     if (!wp_next_scheduled('csm_cron_sync')) {
@@ -29,20 +31,6 @@ register_deactivation_hook(__FILE__, function () {
     $timestamp = wp_next_scheduled('csm_cron_sync');
     if ($timestamp) {
         wp_unschedule_event($timestamp, 'csm_cron_sync');
-    }
-});
-
-add_action('init', function () {
-    new CSM_Sync();
-    // new CSM_REST();
-});
-
-add_action('admin_init', function () {
-    if (isset($_GET['csm_sync'])) {
-        $sync = new CSM_Sync();
-        $sync->sync(true);
-        echo 'Sync completed';
-        exit;
     }
 });
 
@@ -58,3 +46,5 @@ add_action('csm_cron_sync', function () {
     $sync = new CSM_Sync();
     $sync->sync();
 });
+
+new CSM_REST();
