@@ -61,9 +61,9 @@ add_action('init', function () {
     wp_register_script(
         'csm-block-js',
         $plugin_url . 'block/index.js',
-        ['wp-blocks', 'wp-element', 'wp-components'],
+        ['wp-blocks', 'wp-element', 'wp-components', 'wp-api'],
         filemtime($plugin_path . 'block/index.js')
-    );    
+    );     
 
     wp_register_style(
         'csm-block-css',

@@ -26,18 +26,28 @@
             };
 
             const publishPost = (id) => {
+
                 fetch('/wp-json/content-sync/v1/publish', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': wpApiSettings.nonce
                     },
                     body: JSON.stringify({ id })
                 })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('Request failed');
+                    }
+                    return res.json();
+                })
                 .then(() => {
                     fetchPosts();
+                })
+                .catch(err => {
+                    console.error(err);
                 });
-            };
+            };            
 
             useEffect(() => {
                 fetchPosts();
