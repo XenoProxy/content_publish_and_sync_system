@@ -11,13 +11,19 @@ class CSM_REST
 
     public function register_routes()
     {
-        error_log('CSM REST registered');
-        
         register_rest_route(self::REST_NAMESPACE, '/posts', [
             'methods'  => 'GET',
             'callback' => [$this, 'get_posts'],
             'permission_callback' => '__return_true',
             'args' => $this->get_args(),
+        ]);
+
+        register_rest_route(self::REST_NAMESPACE, '/publish', [
+            'methods'  => 'POST',
+            'callback' => [$this, 'publish_post'],
+            'permission_callback' => function () {
+                return current_user_can('edit_posts');
+            },
         ]);
     }
 
@@ -149,4 +155,35 @@ class CSM_REST
 
         return $response;
     }
+
+    public function publish_post($request)
+    {
+        global $wpdb;
+        $table = $wpdb->prefix . CSM_TABLE;
+
+        $id = absint($request['id']);
+
+        if (!$id) {
+            return new WP_Error('invalid_id', 'Invalid ID', ['status' => 400]);
+        }
+
+        $updated = $wpdb->update(
+            $table,
+            ['status' => 'published'],
+            ['id' => $id],
+            ['%s'],
+            ['%d']
+        );
+
+        if ($updated === false) {
+            return new WP_Error('db_error', 'Database update failed', ['status' => 500]);
+        }
+
+        return [
+            'success' => true,
+            'id' => $id,
+            'status' => 'published'
+        ];
+    }
+
 }
