@@ -20,11 +20,11 @@ services:
   wordpress:
     build:
       context: ./wordpress
+      dockerfile: Dockerfile
     container_name: content_wordpress
     restart: unless-stopped
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
     working_dir: /var/www
     volumes:
       - ./wordpress:/var/www
@@ -34,8 +34,11 @@ services:
   nextjs:
     build:
       context: ./nextjs
+      dockerfile: Dockerfile
     container_name: content_nextjs
     restart: unless-stopped
+    ports:
+    - "3000:3000"
     depends_on:
       - wordpress
     networks:
@@ -51,8 +54,8 @@ services:
       - ./wordpress/web:/var/www/web
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - nextjs
       - wordpress
+      - nextjs
     networks:
       - content_network
 
