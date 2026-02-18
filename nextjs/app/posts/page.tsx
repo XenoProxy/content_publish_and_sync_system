@@ -2,6 +2,7 @@ import Link from "next/link";
 import Pagination from "@/components/Pagination";
 import PostList from "@/components/PostList";
 import SearchBar from "@/components/SearchBar"
+import UserFilter from "@/components/UserFilter";
 import { PostsResponse } from "@/types/post";
 
 interface SearchParams {
@@ -48,6 +49,8 @@ export default async function PostsPage({searchParams}: PostsPageProps) {
             <h1>All Posts</h1>
 
             <SearchBar />
+            
+            <UserFilter users={[1,2,3,4,5,6,7,8,9,10]} />
 
             <PostList posts={data.data} />
 
