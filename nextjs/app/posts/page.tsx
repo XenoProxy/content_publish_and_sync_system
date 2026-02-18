@@ -1,53 +1,48 @@
 import Link from "next/link";
+import Pagination from "@/components/Pagination";
+import { Post, PostsResponse } from "@/types/post";
 
-interface Post {
-  id: number;
-  title: string;
-  body: string;
-  author_name: string;
-  published_at: string;
+interface PostsPageProps {
+    searchParams: Promise<{
+        page?: string;
+        user_id?: string;
+        search?: string;
+    }>;
 }
 
-interface Props {
-  searchParams: {
-    page?: string;
-    user_id?: string;
-    search?: string;
-  };
-}
-
-async function getPosts(params: Props["searchParams"]): Promise<any> {
-    const page = params.page || "1";
-    const userId = params.user_id || "";
-    const search = params.search || "";
+async function getPosts(searchParams: PostsPageProps["searchParams"]): Promise<PostsResponse> {
+    const page = (await searchParams).page;
+    const userId = (await searchParams).user_id;
+    const search = (await searchParams).search;
 
     const query = new URLSearchParams({
-    status: "published",
-    page,
-    per_page: "10",
+        status: "published",
+        per_page: "10",
     });
 
     if (userId) query.append("user_id", userId);
     if (search) query.append("search", search);
+    if (page) query.append("page", page);
 
     const res = await fetch(
-    `http://nginx/wp-json/content-sync/v1/posts?${query.toString()}`,
-    { cache: "no-store" }
+        `http://nginx/wp-json/content-sync/v1/posts?${query.toString()}`,
+        { cache: "no-store" }
     );
 
     if (!res.ok) {
-    throw new Error("Failed to fetch posts");
+        throw new Error("Failed to fetch posts");
     }
 
     return res.json();
 }
 
-export default async function PostsPage({ searchParams }: Props) {
+export default async function PostsPage({searchParams}: PostsPageProps) {
+    const params = await searchParams;
     const data = await getPosts(searchParams);
 
-    const posts = data.data ?? [];
-    const totalPages = data.meta.total_pages ?? 1;
-    const currentPage = Number(searchParams.page || 1);
+    const posts = data.data;
+    const totalPages = data.meta.total_pages;
+    const currentPage = Number(params?.page || 1);
 
     return (
         <div style={{ padding: 40 }}>
@@ -65,30 +60,15 @@ export default async function PostsPage({ searchParams }: Props) {
 
                 <p>
                 By {post.author_name} |{" "}
-                {post.published_at
-                    ? new Date(post.published_at).toLocaleDateString()
-                    : ""}
+                {new Date(post.published_at).toLocaleDateString()}
                 </p>
             </div>
             ))}
 
-            <div style={{ marginTop: 40 }}>
-            {Array.from({ length: totalPages }).map((_, i) => {
-                const page = i + 1;
-                return (
-                <Link
-                    key={page}
-                    href={`/posts?page=${page}`}
-                    style={{
-                    marginRight: 10,
-                    fontWeight: page === currentPage ? "bold" : "normal",
-                    }}
-                >
-                    {page}
-                </Link>
-                );
-            })}
-            </div>
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+            />
         </div>
-      );
+    );
 }

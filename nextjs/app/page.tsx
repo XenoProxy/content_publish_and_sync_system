@@ -1,12 +1,5 @@
 import Link from "next/link";
-
-interface Post {
-  id: number;
-  title: string;
-  body: string;
-  author_name: string;
-  published_at: string;
-}
+import { Post } from "@/types/post";
 
 async function getPosts(): Promise<Post[]> {
     const res = await fetch(
