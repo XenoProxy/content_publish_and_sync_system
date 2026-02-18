@@ -2,27 +2,27 @@ import Link from "next/link";
 import Pagination from "@/components/Pagination";
 import { Post, PostsResponse } from "@/types/post";
 
+interface SearchParams {
+    page?: string;
+    user_id?: string;
+    search?: string;
+}
+  
 interface PostsPageProps {
-    searchParams: Promise<{
-        page?: string;
-        user_id?: string;
-        search?: string;
-    }>;
+    searchParams: Promise<SearchParams>;
 }
 
-async function getPosts(searchParams: PostsPageProps["searchParams"]): Promise<PostsResponse> {
-    const page = (await searchParams).page;
-    const userId = (await searchParams).user_id;
-    const search = (await searchParams).search;
+async function getPosts(params:SearchParams): Promise<PostsResponse> {
+    const { page, user_id, search } = params;
 
     const query = new URLSearchParams({
         status: "published",
         per_page: "10",
     });
 
-    if (userId) query.append("user_id", userId);
-    if (search) query.append("search", search);
     if (page) query.append("page", page);
+    if (user_id) query.append("user_id", user_id);
+    if (search) query.append("search", search);
 
     const res = await fetch(
         `http://nginx/wp-json/content-sync/v1/posts?${query.toString()}`,
@@ -38,7 +38,7 @@ async function getPosts(searchParams: PostsPageProps["searchParams"]): Promise<P
 
 export default async function PostsPage({searchParams}: PostsPageProps) {
     const params = await searchParams;
-    const data = await getPosts(searchParams);
+    const data = await getPosts(params);
 
     const posts = data.data;
     const totalPages = data.meta.total_pages;
