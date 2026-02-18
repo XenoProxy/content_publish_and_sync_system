@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Pagination from "@/components/Pagination";
 import PostList from "@/components/PostList";
-import { Post, PostsResponse } from "@/types/post";
+import SearchBar from "@/components/SearchBar"
+import { PostsResponse } from "@/types/post";
 
 interface SearchParams {
     page?: string;
@@ -45,6 +46,8 @@ export default async function PostsPage({searchParams}: PostsPageProps) {
     return (
         <div style={{ padding: 40 }}>
             <h1>All Posts</h1>
+
+            <SearchBar />
 
             <PostList posts={data.data} />
 
