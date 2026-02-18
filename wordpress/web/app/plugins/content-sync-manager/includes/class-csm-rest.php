@@ -31,6 +31,12 @@ class CSM_REST
                 ]
             ]
         ]);
+
+        register_rest_route(self::REST_NAMESPACE, '/posts/(?P<id>\d+)', [
+            'methods'  => 'GET',
+            'callback' => [$this, 'get_single_post'],
+            'permission_callback' => '__return_true',
+        ]);
     }
 
     private function get_args()
@@ -168,6 +174,29 @@ class CSM_REST
         set_transient($cache_key, $response, 5 * MINUTE_IN_SECONDS);
 
         return $response;
+    }
+
+    public function get_single_post($request) {
+        global $wpdb;
+    
+        $id = intval($request['id']);
+    
+        $post = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}content_sync_posts WHERE id = %d AND status = 'published'",
+                $id
+            ),
+            ARRAY_A
+        );
+    
+        if (!$post) {
+            return new WP_Error('not_found', 'Post not found', ['status' => 404]);
+        }
+    
+        return [
+            'success' => true,
+            'data'    => $post
+        ];
     }
 
     public function publish_post($request)

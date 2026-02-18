@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Pagination from "@/components/Pagination";
+import PostList from "@/components/PostList";
 import { Post, PostsResponse } from "@/types/post";
 
 interface SearchParams {
@@ -39,35 +40,17 @@ async function getPosts(params:SearchParams): Promise<PostsResponse> {
 export default async function PostsPage({searchParams}: PostsPageProps) {
     const params = await searchParams;
     const data = await getPosts(params);
-
-    const posts = data.data;
-    const totalPages = data.meta.total_pages;
     const currentPage = Number(params?.page || 1);
 
     return (
         <div style={{ padding: 40 }}>
             <h1>All Posts</h1>
 
-            {posts.length === 0 && <p>No posts</p>}
-
-            {posts.map((post: Post) => (
-            <div key={post.id} style={{ marginBottom: 20 }}>
-                <h2>
-                <Link href={`/posts/${post.id}`}>
-                    {post.title}
-                </Link>
-                </h2>
-
-                <p>
-                By {post.author_name} |{" "}
-                {new Date(post.published_at).toLocaleDateString()}
-                </p>
-            </div>
-            ))}
+            <PostList posts={data.data} />
 
             <Pagination
                 currentPage={currentPage}
-                totalPages={totalPages}
+                totalPages={data.meta.total_pages}
             />
         </div>
     );
