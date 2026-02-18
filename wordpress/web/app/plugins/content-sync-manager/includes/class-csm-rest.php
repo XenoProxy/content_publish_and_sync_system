@@ -175,9 +175,9 @@ class CSM_REST
 
         $updated = $wpdb->update(
             $table,
-            ['status' => 'published'],
+            ['status' => 'published', 'published_at' => current_time('mysql')],
             ['id' => $id],
-            ['%s'],
+            ['%s', '%s'],
             ['%d']
         );
 

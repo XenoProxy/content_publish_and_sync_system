@@ -39,15 +39,24 @@ class CSM_Sync
             $wpdb->replace(
                 $table_name,
                 [
-                    'external_id' => intval($post['id']),
-                    'user_id'     => intval($post['userId']),
-                    'title'       => sanitize_text_field($post['title']),
-                    'body'        => wp_kses_post($post['body']),
+                    'external_id' => $post['id'],
+                    'user_id'     => $post['userId'],
+                    'author_name' => 'User ' . $post['userId'],
+                    'title'       => $post['title'],
+                    'body'        => $post['body'],
+                    'status'      => 'draft',
                     'synced_at'   => current_time('mysql'),
-                    'status'      => 'draft'
+                    'created_at'  => current_time('mysql')
                 ],
                 [
-                    '%d', '%d', '%s', '%s', '%s', '%s'
+                    '%d',
+                    '%d',
+                    '%s',
+                    '%s',
+                    '%s',
+                    '%s',
+                    '%s',
+                    '%s'
                 ]
             );
         }
