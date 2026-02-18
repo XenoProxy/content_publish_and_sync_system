@@ -35,7 +35,10 @@ class CSM_REST
 
     private function get_args()
     {
-        return [
+        return [            
+            'id' => [
+                'sanitize_callback' => 'absint',
+            ],
             'page' => [
                 'default' => 1,
                 'sanitize_callback' => 'absint',
@@ -103,6 +106,11 @@ class CSM_REST
 
         $where = 'WHERE 1=1';
         $params = [];
+
+        if (!empty($request['id'])) {
+            $where .= ' AND id = %d';
+            $params[] = $request['id'];
+        }
 
         if (!empty($request['user_id'])) {
             $where .= ' AND user_id = %d';
