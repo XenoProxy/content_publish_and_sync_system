@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Pagination from "@/components/Pagination";
 import PostList from "@/components/PostList";
 import SearchBar from "@/components/SearchBar"
@@ -15,6 +14,8 @@ interface PostsPageProps {
     searchParams: Promise<SearchParams>;
 }
 
+export const revalidate = 60;
+
 async function getPosts(params:SearchParams): Promise<PostsResponse> {
     const { page, user_id, search } = params;
 
@@ -29,7 +30,7 @@ async function getPosts(params:SearchParams): Promise<PostsResponse> {
 
     const res = await fetch(
         `http://nginx/wp-json/content-sync/v1/posts?${query.toString()}`,
-        { cache: "no-store" }
+        { next: { revalidate: 60 } }
     );
 
     if (!res.ok) {

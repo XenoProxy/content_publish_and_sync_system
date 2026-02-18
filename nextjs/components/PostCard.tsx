@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import { Post } from "@/types/post";
 
@@ -5,7 +6,7 @@ interface PostCardProps {
   post: Post;
 }
 
-export default function PostCard({ post }: PostCardProps) {
+function PostCard({ post }: PostCardProps) {
   return (
     <div style={{ marginBottom: 20 }}>
       <h2>
@@ -21,3 +22,5 @@ export default function PostCard({ post }: PostCardProps) {
     </div>
   );
 }
+
+export default React.memo(PostCard);

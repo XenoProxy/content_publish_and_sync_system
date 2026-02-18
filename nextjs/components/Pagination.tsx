@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 
 interface PaginationProps {
@@ -7,10 +8,7 @@ interface PaginationProps {
   totalPages: number;
 }
 
-export default function Pagination({
-  currentPage,
-  totalPages,
-}: PaginationProps) {
+function Pagination({currentPage, totalPages}: PaginationProps) {
   if (totalPages <= 1) return null;
 
   return (
@@ -34,3 +32,5 @@ export default function Pagination({
     </div>
   );
 }
+
+export default React.memo(Pagination);

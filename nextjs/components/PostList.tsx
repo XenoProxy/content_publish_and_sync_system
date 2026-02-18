@@ -1,3 +1,4 @@
+import React from "react";
 import { Post } from "@/types/post";
 import PostCard from "./PostCard";
 
@@ -5,11 +6,7 @@ interface PostListProps {
   posts: Post[];
 }
 
-export default function PostList({ posts }: PostListProps) {
-  if (!posts.length) {
-    return <p>No posts</p>;
-  }
-
+function PostList({ posts }: PostListProps) {
   return (
     <>
       {posts.map((post) => (
@@ -18,3 +15,5 @@ export default function PostList({ posts }: PostListProps) {
     </>
   );
 }
+
+export default React.memo(PostList);
