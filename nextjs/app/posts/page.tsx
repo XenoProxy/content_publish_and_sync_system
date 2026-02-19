@@ -40,7 +40,7 @@ async function getPosts(params:SearchParams): Promise<PostsResponse> {
     );
 
     if (!res.ok) {
-        throw new Error("Failed to fetch posts");
+      throw new Error(`API error: ${res.status}`);
     }
 
     return res.json();
@@ -56,7 +56,7 @@ export default async function PostsPage({searchParams}: PostsPageProps) {
             <h1>All Posts</h1>
 
             <SearchBar />
-            
+
             <UserFilter users={[1,2,3,4,5,6,7,8,9,10]} />
 
             <PostList posts={data.data} />

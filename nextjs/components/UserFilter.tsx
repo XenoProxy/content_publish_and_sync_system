@@ -8,20 +8,19 @@ interface UserFilterProps {
 }
 
 export default function UserFilter({ users }: UserFilterProps) {
-    
-    const [isPending, startTransition] = useTransition();
-    const router = useRouter();
-    const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-    const currentUser = searchParams.get("user_id");
+  const currentUser = searchParams.get("user_id");
 
-    function handleChange(userId: string) {
+  function handleChange(userId: string) {
     const params = new URLSearchParams(searchParams.toString());
 
     if (userId) {
-        params.set("user_id", userId);
+      params.set("user_id", userId);
     } else {
-        params.delete("user_id");
+      params.delete("user_id");
     }
 
     params.set("page", "1");
