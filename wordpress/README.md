@@ -1,50 +1,234 @@
-<p align="center">
-  <a href="https://roots.io/bedrock/">
-    <img alt="Bedrock" src="https://cdn.roots.io/app/uploads/logo-bedrock.svg" height="100">
-  </a>
-</p>
+# Content Publish & Sync System
 
-<p align="center">
-  <a href="https://packagist.org/packages/roots/bedrock"><img alt="Packagist Installs" src="https://img.shields.io/packagist/dt/roots/bedrock?label=projects%20created&colorB=2b3072&colorA=525ddc&style=flat-square"></a>
-  <a href="https://packagist.org/packages/roots/wordpress"><img alt="roots/wordpress Packagist Downloads" src="https://img.shields.io/packagist/dt/roots/wordpress?label=roots%2Fwordpress%20downloads&logo=roots&logoColor=white&colorB=2b3072&colorA=525ddc&style=flat-square"></a>
-  <img src="https://img.shields.io/badge/dynamic/json.svg?url=https://raw.githubusercontent.com/roots/bedrock/master/composer.json&label=wordpress&logo=roots&logoColor=white&query=$.require[%22roots/wordpress%22]&colorB=2b3072&colorA=525ddc&style=flat-square">
-  <a href="https://github.com/roots/bedrock/actions/workflows/ci.yml"><img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/roots/bedrock/ci.yml?branch=master&logo=github&label=CI&style=flat-square"></a>
-  <a href="https://twitter.com/rootswp"><img alt="Follow Roots" src="https://img.shields.io/badge/follow%20@rootswp-1da1f2?logo=twitter&logoColor=ffffff&message=&style=flat-square"></a>
-  <a href="https://github.com/sponsors/roots"><img src="https://img.shields.io/badge/sponsor%20roots-525ddc?logo=github&style=flat-square&logoColor=ffffff&message=" alt="Sponsor Roots"></a>
-</p>
+Полноценная headless CMS-система для медиа-компании.
 
-<p align="center">WordPress boilerplate with Composer, easier configuration, and an improved folder structure</p>
+Проект реализует архитектуру, в которой:
 
-<p align="center">
-  <a href="https://roots.io/bedrock/">Website</a> &nbsp;&nbsp; <a href="https://roots.io/bedrock/docs/installation/">Documentation</a> &nbsp;&nbsp; <a href="https://github.com/roots/bedrock/releases">Releases</a> &nbsp;&nbsp; <a href="https://discourse.roots.io/">Community</a>
-</p>
+-   Контент поступает из внешнего REST API
+-   Синхронизируется в WordPress (Bedrock)
+-   Хранится в кастомной таблице
+-   Публикуется редакторами через Gutenberg-блок
+-   Отображается на публичном фронтенде (Next.js)
+-   Разворачивается как единая инфраструктура в Docker
 
-## Support us
+Система спроектирована как единое целое, где backend, frontend и
+инфраструктура интегрированы между собой.
 
-We're dedicated to pushing modern WordPress development forward through our open source projects, and we need your support to keep building. You can support our work by purchasing [Radicle](https://roots.io/radicle/), our recommended WordPress stack, or by [sponsoring us on GitHub](https://github.com/sponsors/roots). Every contribution directly helps us create better tools for the WordPress ecosystem.
+------------------------------------------------------------------------
 
-### Sponsors
+# Архитектура системы
 
-<a href="https://carrot.com/"><img src="https://cdn.roots.io/app/uploads/carrot.svg" alt="Carrot" width="120" height="90"></a> <a href="https://wordpress.com/"><img src="https://cdn.roots.io/app/uploads/wordpress.svg" alt="WordPress.com" width="120" height="90"></a> <a href="https://www.itineris.co.uk/"><img src="https://cdn.roots.io/app/uploads/itineris.svg" alt="Itineris" width="120" height="90"></a> <a href="https://kinsta.com/?kaid=OFDHAJIXUDIV"><img src="https://cdn.roots.io/app/uploads/kinsta.svg" alt="Kinsta" width="120" height="90"></a>
+## Сервисы
 
-## Overview
+-   `wordpress` --- Bedrock + плагин `content-sync-manager`
+-   `mysql` --- база данных
+-   `nextjs` --- публичный фронтенд (App Router, TypeScript)
+-   `nginx` --- reverse proxy
 
-Bedrock is a WordPress boilerplate for developers that want to manage their projects with Git and Composer. Much of the philosophy behind Bedrock is inspired by the [Twelve-Factor App](http://12factor.net/) methodology, including the [WordPress specific version](https://roots.io/twelve-factor-wordpress/).
+Все сервисы работают в одной Docker network.
 
-- Better folder structure
-- Dependency management with [Composer](https://getcomposer.org)
-- Easy WordPress configuration with environment specific files
-- Environment variables with [Dotenv](https://github.com/vlucas/phpdotenv)
-- Autoloader for mu-plugins (use regular plugins as mu-plugins)
+------------------------------------------------------------------------
 
-## Getting Started
+# Часть 1 --- WordPress Backend (Bedrock)
 
-See the [Bedrock installation documentation](https://roots.io/bedrock/docs/installation/).
+## 1.1 Плагин `content-sync-manager`
 
-## Stay Connected
+Центральный компонент системы.
 
-- Join us on Discord by [sponsoring us on GitHub](https://github.com/sponsors/roots)
-- Participate on [Roots Discourse](https://discourse.roots.io/)
-- Follow [@rootswp on Twitter](https://twitter.com/rootswp)
-- Read the [Roots Blog](https://roots.io/blog/)
-- Subscribe to the [Roots Newsletter](https://roots.io/newsletter/)
+Расположение:
+
+    wordpress/web/app/plugins/content-sync-manager
+
+------------------------------------------------------------------------
+
+## Синхронизация с внешним API
+
+Источник данных:
+
+    https://jsonplaceholder.typicode.com/posts
+
+### Реализовано
+
+-   Инкрементальная синхронизация (только новые или изменённые записи)
+-   Retry logic: 3 попытки с exponential backoff
+-   Graceful degradation при недоступности API
+-   Логирование ошибок в debug.log
+
+------------------------------------------------------------------------
+
+## Кастомная таблица
+
+Название:
+
+    wp_content_sync_posts
+
+Структура:
+
+  Поле          Описание
+  ------------- --------------------
+  id            внутренний ID
+  external_id   ID во внешнем API
+  user_id       ID автора
+  title         заголовок
+  body          текст
+  synced_at     дата синхронизации
+  status        draft / published
+
+Реализованы индексы на `external_id`, `user_id`, `synced_at`.
+
+⚠ Стандартные WordPress посты НЕ используются для хранения
+синхронизированного контента.
+
+------------------------------------------------------------------------
+
+## Механизм синхронизации
+
+### Автоматическая
+
+-   WP-Cron
+-   каждые 15 минут
+
+### Ручная через WP-CLI
+
+``` bash
+wp content-sync sync --force
+```
+
+В Docker:
+
+``` bash
+docker exec -it content_wordpress wp content-sync sync --force
+```
+
+------------------------------------------------------------------------
+
+## REST API
+
+Namespace:
+
+    /wp-json/content-sync/v1/
+
+Поддержка:
+
+-   Пагинация (`page`, `per_page` ≤ 50)
+-   Фильтрация (`user_id`, `status`)
+-   Сортировка (`orderby=id|synced_at`, `order=asc|desc`)
+-   Поиск (`search`)
+-   Rate limiting --- 120 запросов/минуту
+-   Кэширование --- 5 минут
+
+------------------------------------------------------------------------
+
+## Публикация поста
+
+1.  Данные хранятся в кастомной таблице.
+2.  Через Gutenberg-блок редактор выбирает запись.
+3.  Создаётся WordPress post со статусом `draft`.
+4.  Добавляется meta `_content_sync_id`.
+5.  При публикации:
+    -   статус в кастомной таблице меняется на `published`
+    -   обновляется `published_at`
+    -   очищается кэш REST API
+
+------------------------------------------------------------------------
+
+# 1.2 Gutenberg блок `content-sync-preview`
+
+-   Нативный React
+-   Использует `@wordpress/block-editor` и `@wordpress/components`
+-   Работает в редакторе и на фронтенде
+-   Loading state и error handling
+-   Использует тот же REST API, что и Next.js
+
+Настройки:
+
+-   Количество постов (1--20)
+-   Фильтр по `user_id`
+-   Статус
+-   Стиль отображения
+-   Кнопка синхронизации
+
+------------------------------------------------------------------------
+
+# Часть 2 --- Next.js Frontend
+
+## Главная страница `/`
+
+-   SSR
+-   10 последних опубликованных постов
+
+## `/posts`
+
+-   SSR
+-   Пагинация
+-   Фильтрация
+-   Debounced search (≥300ms)
+-   Client-side navigation
+
+## `/posts/[id]`
+
+-   ISR (revalidate 3600)
+-   Fallback: blocking
+-   Open Graph
+-   Twitter Cards
+-   JSON-LD Article
+
+------------------------------------------------------------------------
+
+# DevOps
+
+## Docker
+
+Сервисы:
+
+-   wordpress
+-   mysql
+-   nextjs
+-   nginx
+
+Реализовано:
+
+-   Общая сеть
+-   Volumes
+-   Переменные окружения
+-   Health checks
+-   Next.js ждёт готовности WordPress API
+
+------------------------------------------------------------------------
+
+# Развёртывание
+
+## Требования
+
+-   Docker
+-   Docker Compose
+
+## Запуск
+
+``` bash
+docker compose up --build
+```
+
+## Доступ
+
+Frontend: http://localhost
+
+WordPress: http://localhost/wp/wp-admin
+
+REST API: http://localhost/wp-json/content-sync/v1/posts
+
+------------------------------------------------------------------------
+
+# Проверка
+
+``` bash
+docker exec -it content_wordpress wp content-sync sync --force
+```
+
+------------------------------------------------------------------------
+
+# Заключение
+
+Проект реализует полноценную headless-архитектуру с изолированной
+системой хранения контента, REST API, SSR/ISR фронтендом и
+Docker-инфраструктурой.
