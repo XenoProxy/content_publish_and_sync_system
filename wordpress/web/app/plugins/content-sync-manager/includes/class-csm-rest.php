@@ -41,7 +41,7 @@ class CSM_REST
 
     private function get_args()
     {
-        return [            
+        return [
             'id' => [
                 'sanitize_callback' => 'absint',
             ],
@@ -133,7 +133,7 @@ class CSM_REST
             $params[] = '%' . $wpdb->esc_like($request['search']) . '%';
         }
 
-        $allowed_orderby = ['id', 'synced_at'];
+        $allowed_orderby = ['id', 'synced_at', 'published_at'];
         $orderby = in_array($request['orderby'], $allowed_orderby)
             ? $request['orderby']
             : 'id';
@@ -149,9 +149,9 @@ class CSM_REST
 
         $sql = $wpdb->prepare(
             "SELECT * FROM $table
-             $where
-             ORDER BY $orderby $order
-             LIMIT %d OFFSET %d",
+              $where
+              ORDER BY $orderby $order
+              LIMIT %d OFFSET %d",
             array_merge($params, [$per_page, $offset])
         );
 
@@ -178,9 +178,9 @@ class CSM_REST
 
     public function get_single_post($request) {
         global $wpdb;
-    
+
         $id = intval($request['id']);
-    
+
         $post = $wpdb->get_row(
             $wpdb->prepare(
                 "SELECT * FROM {$wpdb->prefix}content_sync_posts WHERE id = %d AND status = 'published'",

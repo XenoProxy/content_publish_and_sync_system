@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import PostList from "@/components/PostList";
 import { Post } from "@/types/post";
+import { PostsResponse } from "@/types/post";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ async function getLatestPosts(): Promise<Post[]> {
     throw new Error("Failed to fetch latest posts");
   }
 
-  const data = await res.json();
+  const data: PostsResponse = await res.json();
   return data.data ?? [];
 }
 
