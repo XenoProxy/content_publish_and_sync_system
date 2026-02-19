@@ -1,10 +1,6 @@
 "use client";
 
-export default function Error({
-  error,
-}: {
-  error: Error & { digest?: string };
-}) {
+export default function Error({error,}: {error: Error & { digest?: string };}) {
   const isRateLimit = error.message.includes("429");
 
   return (
