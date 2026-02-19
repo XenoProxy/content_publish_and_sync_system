@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import Pagination from "@/components/Pagination";
 import PostList from "@/components/PostList";
 import SearchBar from "@/components/SearchBar"
@@ -9,10 +11,14 @@ interface SearchParams {
     user_id?: string;
     search?: string;
 }
-  
+
 interface PostsPageProps {
     searchParams: Promise<SearchParams>;
 }
+
+export const metadata: Metadata = {
+    title: "All published posts"
+};
 
 export const revalidate = 60;
 

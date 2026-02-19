@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
+
 import PostList from "@/components/PostList";
 import { Post } from "@/types/post";
+
+export const metadata: Metadata = {
+    title: "Last 10 published posts"
+};
 
 async function getLatestPosts(): Promise<Post[]> {
     const res = await fetch(
