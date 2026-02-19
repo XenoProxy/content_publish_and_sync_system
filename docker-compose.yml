@@ -23,6 +23,11 @@ services:
       dockerfile: Dockerfile
     container_name: content_wordpress
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/wp-json/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
       - mysql
     working_dir: /var/www
@@ -37,6 +42,8 @@ services:
       dockerfile: Dockerfile
     container_name: content_nextjs
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
     ports:
     - "3000:3000"
     depends_on:
