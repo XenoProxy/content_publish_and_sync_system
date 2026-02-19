@@ -1,9 +1,10 @@
 "use client";
+import React, { memo } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
-export default function SearchBar() {
+function SearchBar() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -44,3 +45,5 @@ const handler = setTimeout(() => {
     </>
   );
 }
+
+export default memo(SearchBar);
