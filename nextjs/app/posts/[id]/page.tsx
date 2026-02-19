@@ -55,35 +55,35 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-    const { id } = await params;
+  const { id } = await params;
 
-    const post = await getPost(id);
+  const post = await getPost(id);
 
-    if (!post) {
-        notFound();
-    }
+  if (!post) {
+    notFound();
+  }
 
-    return (
-        <div style={{ padding: 40 }}>
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                    "@context": "https://schema.org",
-                    "@type": "Article",
-                    headline: post.title,
-                    author: {
-                        "@type": "Person",
-                        name: post.author_name,
-                    },
-                    datePublished: post.published_at,
-                    dateModified: post.published_at,
-                    description: post.body.substring(0, 150)
-                    }),
-                }}
-            />
+  return (
+  <div style={{ padding: 40 }}>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: post.title,
+        author: {
+            "@type": "Person",
+            name: post.author_name,
+        },
+        datePublished: post.published_at,
+        dateModified: post.published_at,
+        description: post.body.substring(0, 150)
+        }),
+      }}
+    />
 
-            <PostDetail post={post} />
-        </div>
-    );
+    <PostDetail post={post} />
+  </div>
+  );
 }

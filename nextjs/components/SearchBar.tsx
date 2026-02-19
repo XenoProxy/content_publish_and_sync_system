@@ -1,48 +1,46 @@
 "use client";
 
-import { useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 export default function SearchBar() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-    const [isPending, startTransition] = useTransition();
+  const initialSearch = searchParams.get("search") || "";
+  const [value, setValue] = useState(initialSearch);
+  const [isPending, startTransition] = useTransition();
 
-    const initialSearch = searchParams.get("search") || "";
-    const [value, setValue] = useState(initialSearch);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+    const params = new URLSearchParams(searchParams.toString());
 
-    useEffect(() => {
-        const handler = setTimeout(() => {
-        const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set("search", value);
+    } else {
+      params.delete("search");
+    }
 
-        if (value) {
-            params.set("search", value);
-        } else {
-            params.delete("search");
-        }
+    params.set("page", "1");
 
-        params.set("page", "1");
+    startTransition(() => {
+      router.push(`/posts?${params.toString()}`);
+    });
+  }, 300);
 
-        startTransition(() => {router.push(`/posts?${params.toString()}`)});
-    }, 
-    300);
+  return () => clearTimeout(handler);
+}, [value]);
 
-    return () => clearTimeout(handler);
-    }, [value]);
-
-  return (
-    <input
-        type="text"
-        placeholder="Search by title..."
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        style={{
-        padding: "8px 12px",
-        marginBottom: 20,
-        width: 300,
-        }}
-    />
-  );
+return (
+  <>
+  <input
+    type="text"
+    placeholder="Search by title..."
+    value={value}
+    onChange={(e) => setValue(e.target.value)}
+    style={{ padding: 8, marginBottom: 20, width: 300 }}
+  />
+  {isPending && <p>Updating...</p>}
+  </>
+);
 }
