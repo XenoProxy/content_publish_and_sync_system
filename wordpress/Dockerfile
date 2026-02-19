@@ -18,4 +18,8 @@ RUN curl -sS https://getcomposer.org/installer | php \
     && composer install --no-interaction --no-progress
 
 EXPOSE 9000
+
+HEALTHCHECK --interval=5s --timeout=3s --retries=5 \
+  CMD curl -f http://localhost/web/index.php || exit 1
+
 CMD ["php-fpm"]
